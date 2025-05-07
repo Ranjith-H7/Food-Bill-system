@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react';
+
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Login from '../auth/login';
-import Register from '../auth/register';
+import { lazy } from 'react';
+import React from 'react';
+
+const Login = lazy(() => import('../auth/login'));
+const Register = lazy(() => import('../auth/register'));
 
 // Types
 interface Feature {
@@ -70,9 +74,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, activeForm, setA
           </div>
           <div className="w-full">
             {activeForm === 'login' ? (
-              <Login setActiveForm={setActiveForm} onClose={onClose} />
+              <Login setActiveForm={setActiveForm} />
             ) : (
-              <Register setActiveForm={setActiveForm} onClose={onClose} />
+              <Register setActiveForm={setActiveForm} />
             )}
           </div>
         </motion.div>
@@ -89,7 +93,7 @@ interface SlideshowProps {
 const Slideshow: React.FC<SlideshowProps> = ({ images }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
+React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, 3000); // Change image every 3 seconds
@@ -127,7 +131,7 @@ const QuoteCarousel: React.FC = () => {
   ];
   const [currentQuote, setCurrentQuote] = useState(0);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const interval = setInterval(() => {
       setCurrentQuote((prev) => (prev + 1) % quotes.length);
     }, 5000); // Change quote every 5 seconds

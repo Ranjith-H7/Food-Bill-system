@@ -98,6 +98,7 @@ const Login: React.FC<LoginProps> = ({ setActiveForm }) => {
       const res = await axios.post('http://localhost:5001/api/auth/forgot-password', { email });
       setMessage(res.data.message || 'OTP sent to email');
       setFormStep('resetPassword');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('handleGenerateOtp error:', {
         status: err.response?.status,
@@ -161,6 +162,7 @@ const Login: React.FC<LoginProps> = ({ setActiveForm }) => {
       } else if (user.role === 'user') {
         navigate('/user/dashboard');
       }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       if (err.response?.data?.field) {
         setErrors({ ...errors, [err.response.data.field]: err.response.data.error });
@@ -214,6 +216,7 @@ const Login: React.FC<LoginProps> = ({ setActiveForm }) => {
       setTimeout(() => {
         handleBackToLogin();
       }, 3000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setErrors({
         ...errors,

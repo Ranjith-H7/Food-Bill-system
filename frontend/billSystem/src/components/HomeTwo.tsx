@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Search, Plus, Minus, LogOut, Download, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Search,  LogOut, Download, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 
 interface FoodItem {
@@ -57,6 +57,7 @@ const HomeTwo: React.FC = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setFoodItems(response.data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error fetching items:', error);
       alert(`Failed to fetch items: ${error.response?.data?.message || error.message}`);
@@ -175,6 +176,7 @@ const HomeTwo: React.FC = () => {
       setHasSavedBill(true);
       alert('Bill saved successfully!');
       console.log('Save bill response:', response.data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error saving bill:', {
         message: error.message,
@@ -232,6 +234,7 @@ const HomeTwo: React.FC = () => {
       setPaymentStatus('Successful');
       alert(`Payment via ${paymentMode} successful!`);
       console.log('Confirm payment response:', response.data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('Error confirming payment:', {
         message: error.message,
@@ -387,12 +390,17 @@ const HomeTwo: React.FC = () => {
       setImageFile(null);
       setIsAddItemFormOpen(false);
       alert('Food item added successfully!');
-    } catch (error: any) {
-      console.error('Error adding food item:', {
-        message: error.message,
-        status: error.response?.status,
-        data: error.response?.data,
-      });
+    
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    catch (error: any) {
+          console.error('Error adding food item:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data,
+          });
+
+          
       const errorMessage = error.response?.status === 403
         ? 'Access denied. Please log in again or contact support.'
         : error.response?.data?.error || error.message;

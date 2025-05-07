@@ -103,6 +103,7 @@ const Register: React.FC<RegisterProps> = ({ setActiveForm }) => {
         setErrors({ phone: '', password: '', confirm: '', email: '', username: '' });
         setActiveForm('login'); // Switch to login form
       }, 3000);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       const defaultErrors: Errors = { phone: '', password: '', confirm: '', email: '', username: '' };
       if (err.response?.data?.error) {

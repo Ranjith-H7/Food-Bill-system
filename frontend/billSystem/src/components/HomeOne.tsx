@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, subDays, subWeeks, subMonths, subYears, startOfDay, startOfMonth, endOfMonth, endOfDay } from 'date-fns';
 import { Pie, Bar } from 'react-chartjs-2';
+import type { TooltipItem } from 'chart.js';
 import {
   Chart as ChartJS,
   ArcElement,
@@ -14,9 +15,9 @@ import {
 } from 'chart.js';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { Menu, X, Download, RefreshCw, Plus, Edit, Trash2 } from 'lucide-react';
+import { Menu, X, Download, RefreshCw, Edit, Trash2 } from 'lucide-react';
 import { saveAs } from 'file-saver';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 // Register Chart.js components
 ChartJS.register(
@@ -269,9 +270,9 @@ const HomeOne: React.FC = () => {
       plugins: {
         tooltip: {
           callbacks: {
-            label: (context: any) => {
+            label: (context: TooltipItem<'pie'>) => {
               const label = context.label || '';
-              const value = context.raw || 0;
+              const value = context.raw as number || 0;
               const percentage = totalSpending > 0 ? ((value / totalSpending) * 100).toFixed(1) : 0;
               return `${label}: ₹${value} (${percentage}%)`;
             },
@@ -371,18 +372,22 @@ const HomeOne: React.FC = () => {
                 <RefreshCw size={18} />
               </button>
             </div>
+
             
-            <Calendar
-              onChange={(value: Date | Date[] | null) => {
-                if (value instanceof Date) {
-                  setSelectedDate(value);
-                } else {
-                  setSelectedDate(null);
-                }
-              }}
-              value={selectedDate}
-              className="w-full border-none mb-4"
-            />
+      
+<Calendar
+  onChange={(value) => {
+    if (Array.isArray(value)) {
+      setSelectedDate(value[0] || null); // If it's a date range, pick the first date
+    } else {
+      setSelectedDate(value);
+    }
+  }}
+  value={selectedDate}
+  className="w-full border-none mb-4"
+/>
+
+
             
             <div className="space-y-2">
               <button
@@ -785,15 +790,16 @@ const HomeOne: React.FC = () => {
         backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
       }],
     };
+  
 
     const pieOptions = {
       plugins: {
         legend: { position: 'bottom' as const },
         tooltip: {
           callbacks: {
-            label: (context) => {
+            label: (context: TooltipItem<'pie'>) => {
               const label = context.label || '';
-              const value = context.raw || 0;
+              const value = context.raw as number || 0;
               const percentage = totalSpending > 0 ? ((value / totalSpending) * 100).toFixed(1) : 0;
               return `${label}: ₹${value} (${percentage}%)`;
             },
@@ -802,6 +808,8 @@ const HomeOne: React.FC = () => {
       },
       maintainAspectRatio: false,
     };
+    
+  
 
     return (
       <div className="p-6">
@@ -1048,7 +1056,8 @@ const HomeOne: React.FC = () => {
           closeTime: formData.closeTime,
         };
 
-        let response;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let response: AxiosResponse<any, any>;
         if (editingFood) {
           // Update existing item
           response = await axios.put(`${API_URL}/dashboard/items/${editingFood._id}`, itemData, {
@@ -1076,6 +1085,7 @@ const HomeOne: React.FC = () => {
         setErrorMessage(null);
 
         alert(editingFood ? 'Food item updated successfully!' : 'Food item added successfully!');
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         console.error('Error saving food item:', error);
         const errorMsg = error.response?.data?.error || 'Failed to save food item. Please try again.';
@@ -1109,13 +1119,20 @@ const HomeOne: React.FC = () => {
         });
         setFoodItems(foodItems.filter(item => item._id !== id));
         alert('Food item deleted successfully!');
-      } catch (error: any) {
+      }catch (error: unknown) {
         console.error('Error deleting food item:', error);
-        const errorMsg = error.response?.data?.error || 'Failed to delete food item. Please try again.';
+        let errorMsg = 'Failed to delete food item. Please try again.';
+        
+        if (error && typeof error === 'object' && 'response' in error) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          errorMsg = (error as any).response?.data?.error || errorMsg;
+        }
+        
         setErrorMessage(errorMsg);
       } finally {
         setIsLoading(false);
       }
+      
     };
 
     const handleRefresh = async () => {
@@ -1123,13 +1140,20 @@ const HomeOne: React.FC = () => {
       setErrorMessage(null);
       try {
         await fetchFoodItems();
-      } catch (error: any) {
-        console.error('Error refreshing food items:', error);
-        setErrorMessage('Failed to refresh food items. Please try again.');
+      } catch (error) {
+        // Here, we'll assume that the error is a known object type
+        if (error instanceof Error) {
+          console.error('Error refreshing food items:', error.message);
+          setErrorMessage('Failed to refresh food items. Please try again.');
+        } else {
+          console.error('Unknown error:', error);
+          setErrorMessage('An unknown error occurred.');
+        }
       } finally {
         setIsLoading(false);
       }
     };
+    
 
     return (
       <div className="p-6">
